@@ -1,0 +1,22 @@
+{
+    "name": "dherlou/contao-kkm-site-package",
+    "description": "The site package extension for our Contao website.",
+    "type": "contao-bundle",
+    "require": {
+        "contao/core-bundle": "^5.3"
+    },
+    "license": "LGPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Dherlou\\ContaoKKMSitePackage\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Lucas Roth"
+        }
+    ],
+    "extra": {
+         "contao-manager-plugin": "Dherlou\\ContaoKKMSitePackage\\ContaoManager\\Plugin"
+    }
+}

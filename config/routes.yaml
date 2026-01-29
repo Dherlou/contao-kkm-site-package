@@ -1,0 +1,3 @@
+dherlou.contao_kkm_site_package.controller:
+    resource: ../src/Controller
+    type: attribute

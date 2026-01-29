@@ -1,0 +1,8 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    
+    Dherlou\ContaoKKMSitePackage\:
+        resource: ../src
+        exclude: ../src/{ContaoManager,DependencyInjection,ContaoKKMSitePackage.php}
