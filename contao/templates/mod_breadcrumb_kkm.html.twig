@@ -1,0 +1,51 @@
+{% extends '@Contao/block_unsearchable.html.twig' %}
+
+{% block content %}
+<nav itemprop="breadcrumb"
+     itemscope
+     itemtype="http://schema.org/BreadcrumbList"
+     class="hc-bg-grey-dark">
+  <div class="nav-wrapper">
+    <div class="col s12">
+
+      {% for position, item in items %}
+        {% if item.isActive %}
+          <a href="{{ path('tl_page.' ~ item.data.id) }}"
+             class="breadcrumb"
+             {% if item.title != item.link %}
+               title="{{ item.title }}"
+             {% endif %}>
+            {{ item.title }}
+          </a>
+
+          {% set tag = app.request.query.get('tag') %}
+          {% if tag %}
+            <a href="{{ path('tl_page.' ~ item.data.id, app.request.attributes.get('_route_params')|merge({tag})) }}"
+               class="breadcrumb">
+              Schlagwort: {{ tag }}
+            </a>
+          {% endif %}
+
+        {% else %}
+          <div class="breadcrumb"
+               itemscope
+               itemtype="http://schema.org/ListItem"
+               itemprop="itemListElement">
+
+            <a href="{{ item.href ?: './' }}"
+               {% if item.title != item.link %}
+                 title="{{ item.title }}"
+               {% endif %}
+               itemprop="item">
+              <span itemprop="name">{{ item.link }}</span>
+            </a>
+
+            <meta itemprop="position" content="{{ position + 1 }}">
+          </div>
+        {% endif %}
+      {% endfor %}
+
+    </div>
+  </div>
+</nav>
+{% endblock %}
