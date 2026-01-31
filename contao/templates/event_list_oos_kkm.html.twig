@@ -1,0 +1,124 @@
+{% add "kkm_oos_list" to head %}
+    <style>
+        .kkm-oos-list {
+            border-collapse: collapse;
+            width: 100%;
+            
+            > * {
+            border: 1px solid #ddd;
+            padding: 8px;
+            }
+        }
+        .kkm-oos-list-header {
+            background-color: var(--table-header-footer-background);
+            color: var(--table-header-footer-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+        .kkm-oos-list-service, .kkm-oos-list-service *:not(.chip) {
+            margin: 0px;
+        }
+        .kkm-oos-list-service {
+            background-color: var(--boxes-background);
+        }
+        .kkm-oos-list-service, .kkm-oos-list-service *:not(.chip) {
+            font-size: 16px;
+            line-height: 24px;
+        }
+        .kkm-oos-list-service .chip {
+            margin-bottom: 8px;
+            margin-top: 8px;
+        }
+    </style>
+{% endadd %}
+
+{% block kkm_oos_list %}
+    <div class="kkm-oos-list">
+
+        {% block kkm_oos_list_header %}
+            {% if header %}
+                <h2 class="header kkm-oos-list-header m-0 pt-10 pb-10">
+                    {% if firstDay %}
+                        <span class="day">{{ firstDay }}, </span>
+                    {% endif %}
+                    <span class="date">{{ firstDate }}</span>
+                </h2>
+            {% endif %}
+        {% endblock %}
+
+        {% block kkm_oos_list_service %}
+            <div class="kkm-oos-list-service {{ classList }}">
+                <div class="row">
+
+                    {% block kkm_oos_list_service_meta %}
+                        <div class="col s12 m4">
+                            <div><b>{{ time|default('???')|kkm_oclock }}</b></div>
+                            <div>{{ location|default('') }}</div>
+                            <div>{{ address|default('')|replace({',':"\n"})|nl2br }}</div>
+                        </div>
+                    {% endblock %}
+
+                    {% block kkm_oos_list_service_content %}
+                        <div class="col s12 m8">
+
+                            {% block kkm_oos_list_service_content_heading %}
+                                <div>
+                                    <h3>
+                                        <a href="{{ href }}"
+                                            title="{{ title }} ({% if day %}{{ day }}, {% endif %}{{ date }}{% if time %} {{ time }}{% endif %})"
+                                            {{ target|raw }}>
+                                            {{ link }}
+                                        </a>
+                                    </h3>
+                                </div>
+                            {% endblock %}
+
+                            {% block kkm_oos_list_service_content_tags %}
+                                <div class="tags">
+                                    {% set tagsToDisplay = tags|kkm_tags_oos_list %}
+
+                                    {% for tag in tagsToDisplay %}
+                                        <a href="{{
+                                            path(
+                                                app.request.attributes.get('_route'),
+                                                app.request.attributes.get('_route_params')|merge({
+                                                    'tag': tag
+                                                })
+                                            )
+                                        }}">
+                                            <div class="chip">
+                                                {{ tag }}
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+
+                                    {% if tags|length != tagsToDisplay|length %}
+                                        <span>...</span>
+                                    {% endif %}
+                                </div>
+                            {% endblock %}
+
+                            {% block kkm_oos_list_service_content_details %}
+                                <div>
+                                    {% if teaser %}
+                                        <div class="ce_text block">
+                                            {{ teaser|csp_inline_styles|raw }}
+                                        </div>
+                                    {% else %}
+                                        <div>
+                                            {{ details|csp_inline_styles|raw }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endblock %}
+
+                        </div>
+                    {% endblock %}
+                
+                </div>
+            </div>
+        {% endblock %}
+
+    </div>
+{% endblock %}
