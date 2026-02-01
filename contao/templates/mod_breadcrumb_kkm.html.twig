@@ -10,7 +10,7 @@
 
       {% for position, item in items %}
         {% if item.isActive %}
-          <a href="{{ path('tl_page.' ~ item.data.id) }}"
+          <a href="{{ path('tl_page.' ~ item.data.id, app.request.attributes.get('_route_params')) }}"
              class="breadcrumb"
              {% if item.title != item.link %}
                title="{{ item.title }}"
