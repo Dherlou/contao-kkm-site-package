@@ -10,6 +10,13 @@ class DateTimeExtension extends AbstractExtension
     // data
 
     private const O_CLOCK = ' Uhr';
+    
+    private const SEPARATOR_RANGE_SHORT = '–';
+    private const SEPARATOR_RANGE_LONG = ' ' . self::SEPARATOR_RANGE_SHORT . ' ';
+    private const SEPARATOR_DATE_TIME_SPACE = ' ';
+    private const SEPARATOR_DATE_TIME_INLINE = ', ';
+    private const SEPARATOR_DATE_TIME_LINEBREAK = ",\n";
+    private const SEPARATOR_TIME_HOUR_MINUTE = ':';
 
     private const WEEKDAYS = [
         1 => 'Montag',
@@ -29,6 +36,7 @@ class DateTimeExtension extends AbstractExtension
             new TwigFilter('kkm_datetime', [$this, 'transformToDateTime']),
             new TwigFilter('kkm_datetime_recurring', [$this, 'transformToDateTimeRecurring']),
             new TwigFilter('kkm_oclock', [$this, 'transformTimeToOClock']),
+            new TwigFilter('kkm_time_oos', [$this, 'transformTimeToOOSTime']),
             new TwigFilter('kkm_weekday', [$this, 'transformToWeekday']),
         ];
     }
@@ -40,22 +48,26 @@ class DateTimeExtension extends AbstractExtension
         $dateString = '';
         
         if ($weekday) {
-            $dateString .= (is_numeric($weekday) ? $this->transformToWeekday($weekday) : $weekday) . ', ';
+            $dateString .= (is_numeric($weekday) ? $this->transformToWeekday($weekday) : $weekday) . self::SEPARATOR_DATE_TIME_INLINE;
         }
         
-        if (strpos($date, '–') !== false) {
-            $dateString .= implode(' – ', array_map(function($d) use ($lineBreak) {
-                $d = str_replace(' ', ',' . ($lineBreak ? "\n" : ' '), $d);
-                if (strpos($d, ':') !== false) {
+        if (strpos($date, self::SEPARATOR_RANGE_SHORT) !== false) {
+            $dateString .= implode(self::SEPARATOR_RANGE_LONG, array_map(function($d) use ($lineBreak) {
+                $d = str_replace(
+                    self::SEPARATOR_DATE_TIME_SPACE,
+                    $lineBreak ? self::SEPARATOR_DATE_TIME_LINEBREAK : self::SEPARATOR_DATE_TIME_INLINE,
+                    $d
+                );
+                if (strpos($d, self::SEPARATOR_TIME_HOUR_MINUTE) !== false) {
                     $d = $this->transformTimeToOClock($d);
                 }
                 return $d;
-            }, explode('–', $date)));
+            }, explode(self::SEPARATOR_RANGE_SHORT, $date)));
         } else {
             $dateString .= $date;
 
             if ($time) {
-                $dateString .= ', ' . $this->transformTimeToOClock($time);
+                $dateString .= self::SEPARATOR_DATE_TIME_INLINE . $this->transformTimeToOClock($time);
             }
         }
         
@@ -79,6 +91,16 @@ class DateTimeExtension extends AbstractExtension
     public function transformTimeToOClock(string $time): string
     {
         return $time . self::O_CLOCK;
+    }
+
+    public function transformTimeToOOSTime(string $time): string
+    {
+        if (empty($time)) {
+            return '';
+        }
+
+        $startTime = explode(self::SEPARATOR_RANGE_SHORT, $time)[0];
+        return $this->transformTimeToOClock($startTime);
     }
     
     public function transformToWeekday(int $weekday): string

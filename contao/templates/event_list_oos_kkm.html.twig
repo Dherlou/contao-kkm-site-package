@@ -53,7 +53,7 @@
 
                     {% block kkm_oos_list_service_meta %}
                         <div class="col s12 m4">
-                            <div><b>{{ time|default('???')|kkm_oclock }}</b></div>
+                            <div class="mb-10"><b>{{ time|default('???')|kkm_oclock }}</b></div>
                             <div>{{ location|default('') }}</div>
                             <div>{{ address|default('')|replace({',':"\n"})|nl2br }}</div>
                         </div>
