@@ -37,7 +37,7 @@
     <div class="kkm-oos-list">
 
         {% block kkm_oos_list_header %}
-            {% if header %}
+            {% if header|default('') %}
                 <h2 class="header kkm-oos-list-header m-0 pt-10 pb-10">
                     {% if firstDay %}
                         <span class="day">{{ firstDay }}, </span>
