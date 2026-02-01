@@ -1,0 +1,99 @@
+{% use "@Contao/component/_figure.html.twig" %}
+
+{% block event_full_kkm %}
+    <div class="event layout_full block{{ class|default('') }}">
+        {% block event_full_title %}
+            <h1 itemprop="name">{{ title }}</h1>
+        {% endblock %}
+
+        {% block event_full_tags %}
+            {% set tags = kkm_tags_load_serialized(tags) %}
+            {% if tags|default([]) %}
+                {% set listPage = kkm_tags_load_list_page(contao.page) %}
+                <div class="tags mt-10">
+                    {% for tag in tags %}
+                        <a href="{{ path(
+                            'tl_page.' ~ listPage.id,
+                            {tag}
+                        ) }}">
+                            <div class="chip">{{ tag }}</div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endblock %}
+
+        {% block event_full_time %}
+            <p class="info">
+                <time datetime="{{ datetime }}">
+                    {{ date|kkm_datetime(time, weekday, false) }}
+                </time>
+            </p>
+        {% endblock %}
+
+        {% block event_full_recurring %}
+            {% if recurring|default('') %}
+                <p class="info recurring">{{ recurring|kkm_datetime_recurring|raw }}</p>
+            {% endif %}
+        {% endblock %}
+
+        {% block event_full_content %}
+            {% if hasDetails|default(false) %}
+                {{ details|raw }}
+            {% else %}
+                <div class="ce_text block">
+                    {% block event_full_teaser_before %}
+                        {% if not addBefore|default(false) %}
+                            {{ teaser|raw }}
+                        {% endif %}
+                    {% endblock %}
+
+                    {% block event_full_media %}
+                        {% if addImage|default(false) and figure|default('') %}
+                            {% set figure_attributes = attrs()
+                                .addClass('image_container' ~ floatClass|default(''))
+                            %}
+                            {% if margin|default('') %}
+                                {% set figure_attributes = figure_attributes.set('style', margin) %}
+                            {% endif %}
+                            {% with {figure: figure, figure_attributes: figure_attributes} %}
+                                {{ block('figure_component') }}
+                            {% endwith %}
+                        {% endif %}
+                    {% endblock %}
+
+                    {% block event_full_teaser_after %}
+                        {% if addBefore|default(false) %}
+                            {{ teaser|raw }}
+                        {% endif %}
+                    {% endblock %}
+                </div>
+            {% endif %}
+        {% endblock %}
+
+        {% block event_full_location %}
+            {% if location|default('') %}
+                <p class="location">
+                    {{ location }}{% if address|default('') %} ({{ address }}){% endif %}
+                </p>
+            {% endif %}
+        {% endblock %}
+
+        {% block event_full_enclosure %}
+            {% if enclosure|default([]) %}
+                <div class="content-downloads">
+                    <ul class="enclosure">
+                        {% for enclosure_item in enclosure %}
+                            <li class="download-element ext-{{ enclosure_item.extension }}">
+                                <a href="{{ enclosure_item.href }}" title="{{ enclosure_item.title }}">
+                                    {{ enclosure_item.link }}
+                                    <span class="size">({{ enclosure_item.filesize }})</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endblock %}
+    </div>
+{% endblock %}

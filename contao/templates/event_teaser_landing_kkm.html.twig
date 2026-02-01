@@ -35,14 +35,7 @@
                 {% block event_teaser_landing_time %}
                     <p class="time">
                         <time datetime="{{ datetime }}" class="hc-bg-black-ter">
-                            {% if day %}
-                                {{ day ~ ', ' }}
-                            {% endif %}
-                            {% if '–' in date %}
-                                {{ date|split('–')|map(d => d|replace({' ': ', '}))|map(d => (':' in d) ? (d|kkm_oclock) : d)|join(' – ') }}
-                            {% else %}
-                                {{ date }}{{ (time is defined and time) ? (",\n" ~ (time|kkm_oclock))|nl2br : '' }}
-                            {% endif %}
+                            {{ date|kkm_datetime(time, day, true) }}
                         </time>
                     </p>
                 {% endblock %}

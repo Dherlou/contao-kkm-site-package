@@ -2,13 +2,16 @@
 
 namespace Dherlou\ContaoKKMSitePackage\Twig;
 
+use Contao\PageModel;
+use numero2\TagsBundle\TagsModel;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
+use Twig\TwigFunction;
 
 class TagExtension extends AbstractExtension
 {
 
-    // data
+    /* data */
 
     private const TYPE_PRIORITY_LOOKUP = [
         /* Main servie types */
@@ -43,7 +46,7 @@ class TagExtension extends AbstractExtension
     ];
 
 
-    // filter registration
+    /* filters */
 
     public function getFilters(): array
     {
@@ -52,8 +55,6 @@ class TagExtension extends AbstractExtension
         ];
     }
 
-    // filter implementation
-
     public function transformTagsForOOSList(array $tags): array
     {
         $sorted = $this->getSortedTagsByPriorities($tags, self::TYPE_PRIORITY_LOOKUP, self::LOCATION_PRIORITY_LOOKUP);
@@ -61,7 +62,34 @@ class TagExtension extends AbstractExtension
         return $this->getLimitedTags($sorted, 2, 1);
     }
 
-    // helper functions
+    /* functions */
+
+    public function getFunctions(): array
+    {
+        return [
+            new TwigFunction('kkm_tags_load_serialized', [$this, 'loadSerializedTags']),
+            new TwigFunction('kkm_tags_load_list_page', [$this, 'loadListPage']),
+        ];
+    }
+
+    public function loadSerializedTags(string $serializedTagIds): array
+    {
+        $tagIds = unserialize($serializedTagIds);
+
+        $tags = array_map(
+            fn($id) => TagsModel::findById($id)?->tag,
+            $tagIds
+        );
+
+        return array_filter($tags);
+    }
+
+    public function loadListPage(PageModel $page): ?PageModel
+    {
+        return PageModel::findById($page->pid);
+    }
+
+    /* helper functions */
 
     private function getSortedTagsByPriorities(array $tags, array ...$priorityLookups): array
     {
