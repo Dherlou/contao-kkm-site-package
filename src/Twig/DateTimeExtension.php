@@ -2,6 +2,8 @@
 
 namespace Dherlou\ContaoKKMSitePackage\Twig;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -17,6 +19,8 @@ class DateTimeExtension extends AbstractExtension
     private const SEPARATOR_DATE_TIME_INLINE = ', ';
     private const SEPARATOR_DATE_TIME_LINEBREAK = ",\n";
     private const SEPARATOR_TIME_HOUR_MINUTE = ':';
+
+    private const TZ = 'Europe/Berlin';
 
     private const WEEKDAYS = [
         1 => 'Montag',
@@ -38,6 +42,7 @@ class DateTimeExtension extends AbstractExtension
             new TwigFilter('kkm_oclock', [$this, 'transformTimeToOClock']),
             new TwigFilter('kkm_time_oos', [$this, 'transformTimeToOOSTime']),
             new TwigFilter('kkm_weekday', [$this, 'transformToWeekday']),
+            new TwigFilter('kkm_weekday_from_tstamp', [$this, 'transformToWeekdayFromTStamp']),
         ];
     }
 
@@ -103,8 +108,15 @@ class DateTimeExtension extends AbstractExtension
         return $this->transformTimeToOClock($startTime);
     }
     
-    public function transformToWeekday(int $weekday): string
+    public function transformToWeekday(?int $weekday): ?string
     {
-        return self::WEEKDAYS[$weekday] ?? '';
+        return self::WEEKDAYS[$weekday] ?? null;
+    }
+
+    public function transformToWeekdayFromTStamp(int $tStamp): ?string
+    {
+        $dateTime = DateTimeImmutable::createFromFormat('U', $tStamp, new DateTimeZone(self::TZ));
+
+        return $this->transformToWeekday($dateTime?->format('N'));
     }
 }
