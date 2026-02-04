@@ -72,8 +72,12 @@ class TagExtension extends AbstractExtension
         ];
     }
 
-    public function loadSerializedTags(string $serializedTagIds): array
+    public function loadSerializedTags(?string $serializedTagIds): array
     {
+        if (!$serializedTagIds) {
+            return [];
+        }
+
         $tagIds = unserialize($serializedTagIds);
 
         $tags = array_map(
