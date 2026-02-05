@@ -51,11 +51,19 @@ class TagExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('kkm_tags_oos_list', [$this, 'transformTagsForOOSList']),
+            new TwigFilter('kkm_tags_list', [$this, 'getTagsList']),
+            new TwigFilter('kkm_tags_list_oos', [$this, 'getTagsListOOS']),
         ];
     }
 
-    public function transformTagsForOOSList(array $tags): array
+    public function getTagsList(?array $tags): array
+    {
+        $sorted = $this->getSortedTagsByPriorities($tags, self::TYPE_PRIORITY_LOOKUP, self::LOCATION_PRIORITY_LOOKUP);
+
+        return $this->getLimitedTags($sorted, 1, 1);
+    }
+
+    public function getTagsListOOS(?array $tags): array
     {
         $sorted = $this->getSortedTagsByPriorities($tags, self::TYPE_PRIORITY_LOOKUP, self::LOCATION_PRIORITY_LOOKUP);
 
@@ -95,13 +103,15 @@ class TagExtension extends AbstractExtension
 
     /* helper functions */
 
-    private function getSortedTagsByPriorities(array $tags, array ...$priorityLookups): array
+    private function getSortedTagsByPriorities(?array $tags, array ...$priorityLookups): array
     {
-        usort($tags, function ($tag1, $tag2) use ($priorityLookups) {
+        $tagsToSort = $tags ?? [];
+
+        usort($tagsToSort, function ($tag1, $tag2) use ($priorityLookups) {
             return $this->getSortOrder($tag1, $tag2, ...$priorityLookups);
         });
 
-        return $tags;
+        return $tagsToSort;
     }
 
     private function getSortOrder(string $tag1, string $tag2, array ...$priorityLookups): int

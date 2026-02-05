@@ -1,0 +1,67 @@
+{% use "@Contao/component/_figure.html.twig" %}
+
+{% block news_teaser_landing %}
+    <div class="layout_teaser arc_{{ archive.id|default('') }} block col {{ class|default('') }}">
+        <div class="inner hc-bg-grey-dark">
+
+            {% block news_teaser_landing_media %}
+                {% if addImage|default(false) and figure|default('') %}
+                    {% set figure_attributes = attrs()
+                        .addClass('image_container' ~ floatClass|default(''))
+                    %}
+                    {% if margin|default('') %}
+                        {% set figure_attributes = figure_attributes.set('style', margin) %}
+                    {% endif %}
+                    {% with {figure: figure, figure_attributes: figure_attributes} %}
+                        {{ block('figure_component') }}
+                    {% endwith %}
+                {% endif %}
+            {% endblock %}
+
+            <div class="text">
+                {% block news_teaser_landing_title %}
+                    <h2>{{ linkHeadline|raw }}</h2>
+                {% endblock %}
+
+                {% block news_teaser_landing_time %}
+                    <p class="time">
+                        <time datetime="{{ datetime }}" class="hc-bg-black-ter">
+                            {{ date|replace({' ': ', '})|kkm_oclock}}
+                        </time>
+                    </p>
+                {% endblock %}
+
+                {% block news_teaser_tags %}
+                    <div class="tags">
+                        {% set tagsToDisplay = tags|kkm_tags_list %}
+
+                        {% for tag in tagsToDisplay %}
+                            <a href="{{
+                                path(
+                                    app.request.attributes.get('_route'),
+                                    app.request.attributes.get('_route_params')|merge({
+                                        'tag': tag
+                                    })
+                                )
+                            }}">
+                                <div class="chip">
+                                    {{ tag }}
+                                </div>
+                            </a>
+                        {% endfor %}
+
+                        {% if tags|length != tagsToDisplay|length %}
+                            <span>...</span>
+                        {% endif %}
+                    </div>
+                {% endblock %}
+
+                {% block news_teaser_landing_teaser %}
+                    <div class="teaser">
+                        {{ teaser|raw }}
+                    </div>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

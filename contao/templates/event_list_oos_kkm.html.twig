@@ -76,7 +76,7 @@
 
                             {% block kkm_oos_list_service_content_tags %}
                                 <div class="tags">
-                                    {% set tagsToDisplay = tags|kkm_tags_oos_list %}
+                                    {% set tagsToDisplay = tags|kkm_tags_list_oos %}
 
                                     {% for tag in tagsToDisplay %}
                                         <a href="{{
