@@ -40,7 +40,7 @@ class DateTimeExtension extends AbstractExtension
             new TwigFilter('kkm_datetime', [$this, 'transformToDateTime']),
             new TwigFilter('kkm_datetime_recurring', [$this, 'transformToDateTimeRecurring']),
             new TwigFilter('kkm_oclock', [$this, 'transformTimeToOClock']),
-            new TwigFilter('kkm_time_oos', [$this, 'transformTimeToOOSTime']),
+            new TwigFilter('kkm_time_cal', [$this, 'transformToTimeCalendar']),
             new TwigFilter('kkm_weekday', [$this, 'transformToWeekday']),
             new TwigFilter('kkm_weekday_from_tstamp', [$this, 'transformToWeekdayFromTStamp']),
         ];
@@ -98,7 +98,7 @@ class DateTimeExtension extends AbstractExtension
         return $time . self::O_CLOCK;
     }
 
-    public function transformTimeToOOSTime(string $time): string
+    public function transformToTimeCalendar(string $time): string
     {
         if (empty($time)) {
             return '';

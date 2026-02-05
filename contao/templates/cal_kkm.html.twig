@@ -1,7 +1,7 @@
-{% block cal_oos_kkm %}
+{% block cal_kkm %}
     <table class="calendar">
         <thead>
-            {% block cal_oos_kkm_header %}
+            {% block cal_kkm_header %}
                 <tr>
                     <th colspan="2" class="head previous hc-bg-black-ter">
                         {% if prevHref|default('') %}
@@ -21,7 +21,7 @@
                 </tr>
             {% endblock %}
 
-            {% block cal_oos_kkm_weekday_labels %}
+            {% block cal_kkm_weekday_labels %}
                 <tr>
                     {% for day in days|default([]) %}
                         <th class="label{{ day.class|default('') }} hc-bg-grey-dark">{{ day.name }}</th>
@@ -30,23 +30,26 @@
             {% endblock %}
         </thead>
 
-        {% block cal_oos_kkm_body %}
+        {% block cal_kkm_body %}
             <tbody>
                 {% for week in weeks|default([]) %}
                     <tr>
                         {% for day in week %}
                             <td class="{{ day.class|default('') ? day.class ~ ' ' : '' }}hc-bg-grey-dark">
-                                {% block cal_oos_kkm_day_header %}
+                                {% block cal_kkm_day_header %}
                                     <div class="header">{{ day.label }}</div>
                                 {% endblock %}
 
-                                {% block cal_oos_kkm_day_events %}
+                                {% block cal_kkm_day_events %}
                                     {% for event in day.events|default([]) %}
                                         <div class="event cal_{{ event.parent }}{{ event.class }} mt-10">
                                             <a href="{{ event.href }}"
                                                title="{{ event.title }} ({% if event.day|default('') %}{{ event.day }}, {% endif %}{{ event.date }}{% if event.time|default('') %} {{ event.time }}{% endif %})"
                                                {{ event.target|raw }}>
-                                               {{ event.time|kkm_time_oos }}<br/>{{ event.link }}
+                                                {% if event.time %}
+                                                    {{ event.time|kkm_time_cal }}<br/>
+                                                {% endif %}
+                                                {{ event.link }}
                                             </a>
                                         </div>
                                     {% endfor %}

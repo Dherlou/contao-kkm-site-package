@@ -1,10 +1,10 @@
 {% use "@Contao/component/_figure.html.twig" %}
 
-{% block news_teaser_landing %}
+{% block news_teaser %}
     <div class="layout_teaser arc_{{ archive.id|default('') }} block col {{ class|default('') }}">
         <div class="inner hc-bg-grey-dark">
 
-            {% block news_teaser_landing_media %}
+            {% block news_teaser_media %}
                 {% if addImage|default(false) and figure|default('') %}
                     {% set figure_attributes = attrs()
                         .addClass('image_container' ~ floatClass|default(''))
@@ -19,11 +19,11 @@
             {% endblock %}
 
             <div class="text">
-                {% block news_teaser_landing_title %}
+                {% block news_teaser_title %}
                     <h2>{{ linkHeadline|raw }}</h2>
                 {% endblock %}
 
-                {% block news_teaser_landing_time %}
+                {% block news_teaser_time %}
                     <p class="time">
                         <time datetime="{{ datetime }}" class="hc-bg-black-ter">
                             {{ date|replace({' ': ', '})|kkm_oclock}}
@@ -56,7 +56,7 @@
                     </div>
                 {% endblock %}
 
-                {% block news_teaser_landing_teaser %}
+                {% block news_teaser_teaser %}
                     <div class="teaser">
                         {{ teaser|raw }}
                     </div>
