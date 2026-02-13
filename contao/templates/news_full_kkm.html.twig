@@ -2,8 +2,7 @@
     <div class="layout_full block{{ class|default('') }}">
         {% block news_full_info %}
             <p class="info">
-                {% set dateTimeParts = date|split(' ') %}
-                <time datetime="{{ datetime }}">{{ dateTimeParts[0]|kkm_datetime(dateTimeParts[1] ?? null, time|kkm_weekday_from_tstamp) }}</time> {{ author }}
+                <time datetime="{{ datetime }}">{{ date|kkm_datetime }}</time> {{ author }}
             </p>
         {% endblock %}
 

@@ -47,7 +47,7 @@
                                                title="{{ event.title }} ({% if event.day|default('') %}{{ event.day }}, {% endif %}{{ event.date }}{% if event.time|default('') %} {{ event.time }}{% endif %})"
                                                {{ event.target|raw }}>
                                                 {% if event.time %}
-                                                    {{ event.time|kkm_time_cal }}<br/>
+                                                    {{ event.time|kkm_time(true) }}<br/>
                                                 {% endif %}
                                                 {{ event.link }}
                                             </a>

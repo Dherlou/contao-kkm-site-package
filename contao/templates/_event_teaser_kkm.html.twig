@@ -1,15 +1,14 @@
 {% use "@Contao/component/_figure.html.twig" %}
 
-{% block news_teaser %}
-    <div class="layout_teaser arc_{{ archive.id|default('') }} block col {{ class|default('') }}">
+{% block event_teaser %}
+    <div class="event layout_teaser{{ classUpcoming }} col {{ class|default('')}} s12 m4 l3">
         <div class="inner hc-bg-grey-dark">
-
-            {% block news_teaser_media %}
-                {% if addImage|default(false) and figure|default('') %}
+            {% block event_teaser_media %}
+                {% if addImage is defined and addImage and figure is defined and figure %}
                     {% set figure_attributes = attrs()
                         .addClass('image_container' ~ floatClass|default(''))
                     %}
-                    {% if margin|default('') %}
+                    {% if margin is defined and margin %}
                         {% set figure_attributes = figure_attributes.set('style', margin) %}
                     {% endif %}
                     {% with {figure: figure, figure_attributes: figure_attributes} %}
@@ -19,19 +18,29 @@
             {% endblock %}
 
             <div class="text">
-                {% block news_teaser_title %}
-                    <h2>{{ linkHeadline|raw }}</h2>
+                {% block event_teaser_title %}
+                    {% if hasDetails is defined and hasDetails %}
+                        <h2>
+                            <a href="{{ href }}"
+                               title="{{ title }} ({{ date|kkm_datetime(time, false) }})"
+                               {{ target }}>
+                                {{ link }}
+                            </a>
+                        </h2>
+                    {% else %}
+                        <h2>{{ title }}</h2>
+                    {% endif %}
                 {% endblock %}
 
-                {% block news_teaser_time %}
+                {% block event_teaser_time %}
                     <p class="time">
                         <time datetime="{{ datetime }}" class="hc-bg-black-ter">
-                            {{ date|kkm_datetime(null, false)}}
+                            {{ date|kkm_datetime(time)|raw }}
                         </time>
                     </p>
                 {% endblock %}
 
-                {% block news_teaser_tags %}
+                {% block event_teaser_tags %}
                     <div class="tags">
                         {% set tagsToDisplay = tags|kkm_tags_list %}
 
@@ -56,10 +65,16 @@
                     </div>
                 {% endblock %}
 
-                {% block news_teaser_teaser %}
+                {% block event_teaser_teaser %}
                     <div class="teaser">
                         {{ teaser|raw }}
                     </div>
+                {% endblock %}
+
+                {% block event_teaser_more %}
+                    {% if hasDetails is defined and hasDetails %}
+                        <a class="more" href="{{ href }}">{{ more }}</a>
+                    {% endif %}
                 {% endblock %}
             </div>
         </div>

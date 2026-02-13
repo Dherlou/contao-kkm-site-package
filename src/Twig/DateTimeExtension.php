@@ -2,89 +2,55 @@
 
 namespace Dherlou\ContaoKKMSitePackage\Twig;
 
-use DateTimeImmutable;
-use DateTimeZone;
+use DateTime;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
+
 
 class DateTimeExtension extends AbstractExtension
 {
     // data
 
-    private const O_CLOCK = ' Uhr';
+    private const FORMAT_IN_DATE = 'd.m.Y';
+    private const FORMAT_IN_DATE_TIME = self::FORMAT_IN_DATE . self::SEPARATOR_DATE_TIME_IN . self::FORMAT_IN_TIME;
+    private const FORMAT_IN_TIME = 'H:i';
+    private const FORMAT_OUT_DATE = 'l, d.m.Y';
+    private const FORMAT_OUT_TIME = 'H:i';
+    private const FORMAT_OUT_TIME_SUFFIX = ' Uhr';
     
     private const SEPARATOR_RANGE_SHORT = '–';
     private const SEPARATOR_RANGE_LONG = ' ' . self::SEPARATOR_RANGE_SHORT . ' ';
-    private const SEPARATOR_DATE_TIME_SPACE = ' ';
-    private const SEPARATOR_DATE_TIME_INLINE = ', ';
-    private const SEPARATOR_DATE_TIME_LINEBREAK = ",\n";
+    private const SEPARATOR_RANGE_LINEBREAK = self::SEPARATOR_RANGE_LONG . "\n";
+    private const SEPARATOR_DATE_TIME_IN = ' ';
+    private const SEPARATOR_DATE_TIME_OUT = ', ';
     private const SEPARATOR_TIME_HOUR_MINUTE = ':';
-
-    private const TZ = 'Europe/Berlin';
-
-    private const WEEKDAYS = [
-        1 => 'Montag',
-        2 => 'Dienstag',
-        3 => 'Mittwoch',
-        4 => 'Donnerstag',
-        5 => 'Freitag',
-        6 => 'Samstag',
-        7 => 'Sonntag'
-    ];
 
     // filter registration
 
     public function getFilters(): array
     {
         return [
-            new TwigFilter('kkm_datetime', [$this, 'transformToDateTime']),
-            new TwigFilter('kkm_datetime_recurring', [$this, 'transformToDateTimeRecurring']),
-            new TwigFilter('kkm_oclock', [$this, 'transformTimeToOClock']),
-            new TwigFilter('kkm_time_cal', [$this, 'transformToTimeCalendar']),
-            new TwigFilter('kkm_weekday', [$this, 'transformToWeekday']),
-            new TwigFilter('kkm_weekday_from_tstamp', [$this, 'transformToWeekdayFromTStamp']),
+            new TwigFilter('kkm_datetime', [$this, 'parseAndFormatDateTimeStrings']),
+            new TwigFilter('kkm_datetime_recurring', [$this, 'parseAndFormatDateTimeStringsRecurring']),
+            new TwigFilter('kkm_time', [$this, 'parseAndFormatTimeStrings']),
         ];
     }
 
-    // filter implementation
-    
-    public function transformToDateTime(string $date, ?string $time = null, string|int|null $weekday = null, bool $lineBreak = false): string
-    {
-        $dateString = '';
-        
-        if ($weekday) {
-            $dateString .= (is_numeric($weekday) ? $this->transformToWeekday($weekday) : $weekday) . self::SEPARATOR_DATE_TIME_INLINE;
-        }
-        
-        if (strpos($date, self::SEPARATOR_RANGE_SHORT) !== false) {
-            $dateString .= implode(self::SEPARATOR_RANGE_LONG, array_map(function($d) use ($lineBreak) {
-                $d = str_replace(
-                    self::SEPARATOR_DATE_TIME_SPACE,
-                    $lineBreak ? self::SEPARATOR_DATE_TIME_LINEBREAK : self::SEPARATOR_DATE_TIME_INLINE,
-                    $d
-                );
-                if (strpos($d, self::SEPARATOR_TIME_HOUR_MINUTE) !== false) {
-                    $d = $this->transformTimeToOClock($d);
-                }
-                return $d;
-            }, explode(self::SEPARATOR_RANGE_SHORT, $date)));
-        } else {
-            $dateString .= $date;
+    // filter implementations
 
-            if ($time) {
-                $dateString .= self::SEPARATOR_DATE_TIME_INLINE . $this->transformTimeToOClock($time);
-            }
-        }
+    public function parseAndFormatDateTimeStrings(string $dateString, ?string $timeString = null, bool $lineBreak = true): string
+    {
+        list($start, $end) = $this->parseDateTimeStrings($dateString, $timeString);
         
-        return $dateString;
+        return $this->formatDateTimes($start, $end, $lineBreak);
     }
 
-    public function transformToDateTimeRecurring(string $recurring): string
+    public function parseAndFormatDateTimeStringsRecurring(string $recurring): string
     {
         $pattern = '/(?<=<time datetime="[^"]{25}">)(.*)(?=<\/time>)/';
 
         preg_match($pattern, $recurring, $matches);
-        $formattedDateTime = $this->transformToDateTime($matches[1]);
+        $formattedDateTime = $this->parseAndFormatDateTimeStrings($matches[1]);
 
         return preg_replace(
             $pattern,
@@ -93,30 +59,157 @@ class DateTimeExtension extends AbstractExtension
         );
     }
 
-    public function transformTimeToOClock(string $time): string
+    public function parseAndFormatTimeStrings(string $timeString, bool $startOnly = false): string
     {
-        return $time . self::O_CLOCK;
+        list($start, $end) = $this->parseDateTimeStrings('', $timeString);
+
+        return $this->formatTimes($start, $startOnly ? null : $end);
     }
 
-    public function transformToTimeCalendar(string $time): string
+    // filter helpers
+
+    private function parseDateTimeStrings(string $dateString, ?string $timeString): array
     {
-        if (empty($time)) {
-            return '';
+        list($dateStrings, $timeStrings) = $this->extractDateTimeStrings($dateString, $timeString);
+        $dateTimes = [];
+
+        for ($i = 0; $i < 2; $i++) {
+            $dateStringI = $dateStrings[$i] ?? $dateStrings[0];
+            $timeStringI = $timeStrings[$i] ?? $timeStrings[0] ?? null;
+
+            $dateTimeString = implode(
+                self::SEPARATOR_DATE_TIME_IN,
+                [
+                    $dateStringI ?? '',
+                    $timeStringI ?? '',
+                ]
+            );
+            $dateTimeStringTrimmed = trim($dateTimeString);
+
+            $dateTimes[] = $this->parseDateTimeString($dateTimeStringTrimmed);
         }
 
-        $startTime = explode(self::SEPARATOR_RANGE_SHORT, $time)[0];
-        return $this->transformTimeToOClock($startTime);
-    }
-    
-    public function transformToWeekday(?int $weekday): ?string
-    {
-        return self::WEEKDAYS[$weekday] ?? null;
+        return $dateTimes;
     }
 
-    public function transformToWeekdayFromTStamp(int $tStamp): ?string
+    private function extractDateTimeStrings(string $dateString, ?string $timeString): array
     {
-        $dateTime = DateTimeImmutable::createFromFormat('U', $tStamp, new DateTimeZone(self::TZ));
+        $dateTimeStrings = explode(self::SEPARATOR_RANGE_SHORT, $dateString);
 
-        return $this->transformToWeekday($dateTime?->format('N'));
+        $dateStrings = [];
+        $timeStrings = [];
+
+        if (str_contains($dateTimeStrings[0], self::SEPARATOR_DATE_TIME_IN)) {
+            foreach ($dateTimeStrings as $dateTimeString) {
+                $dateTimeStringParts = explode(self::SEPARATOR_DATE_TIME_IN, $dateTimeString);
+
+                $timeStrings[] = array_slice($dateTimeStringParts, -1, 1)[0] ?? null;
+                $dateStrings[] = array_slice($dateTimeStringParts, 0, count($dateTimeStringParts) - 1)[0] ?? null;                
+            }
+        } else {
+            $dateStrings = $dateTimeStrings;
+            $timeStrings = str_contains($timeString, self::SEPARATOR_TIME_HOUR_MINUTE) ?
+                explode(self::SEPARATOR_RANGE_SHORT, $timeString) :
+                [];
+        }
+
+        return [$dateStrings, $timeStrings];
+    }
+
+    private function parseDateTimeString(string $dateTimeString): ?DateTime
+    {
+        $dateTime = DateTime::createFromFormat(self::FORMAT_IN_DATE_TIME, $dateTimeString);
+
+        $date = DateTime::createFromFormat(self::FORMAT_IN_DATE, $dateTimeString);
+        if ($date !== false) {
+            $date->setTime(0, 0);
+        }
+
+        $time = DateTime::createFromFormat(self::FORMAT_IN_TIME, $dateTimeString);
+
+        return $dateTime ?: $date ?: $time ?: null;
+    }
+
+    private function formatDateTimes(?DateTime $start, ?DateTime $end, bool $lineBreak): string
+    {
+        $dateTimes = [];
+
+        if ($start !== null) {
+            $dateTimes[] = $this->formatDateTime($start);
+        }
+
+        if ($end !== null) {
+            if ($this->areSameDate($start, $end) && !$this->areSameTime($start, $end)) {
+                $dateTimes[0] = str_replace(
+                    self::FORMAT_OUT_TIME_SUFFIX,
+                    self::SEPARATOR_RANGE_SHORT . $this->formatTime($end),
+                    $dateTimes[0]
+                );
+            } else if ($start != $end) {
+                $dateTimes[] = $this->formatDateTime($end);
+            }
+        }
+
+        $dateTimeStrings = implode(
+            $lineBreak ? self::SEPARATOR_RANGE_LINEBREAK : self::SEPARATOR_RANGE_LONG,
+            $dateTimes
+        );
+        $dateTimeStringsLinebreak = nl2br($dateTimeStrings);
+
+        return $lineBreak ? $dateTimeStringsLinebreak : $dateTimeStrings;
+    }
+
+    private function formatTimes(?DateTime $start, ?DateTime $end): string
+    {
+        $times = [];
+
+        if ($start !== null) {
+            $times[] = $this->formatTime($start);
+        }
+
+        if ($end !== null) {
+            $times[] = $this->formatTime($end);
+        }
+
+        return implode(self::SEPARATOR_RANGE_SHORT, $times);
+    }
+
+    private function formatDateTime(DateTime $dateTime): string
+    {
+        $output = $dateTime->format(self::FORMAT_OUT_DATE);
+
+        if ($this->hasTimeset($dateTime)) {
+            $output .= self::SEPARATOR_DATE_TIME_OUT . $this->formatTime($dateTime);
+        }
+        
+        return $output;
+    }
+
+    private function formatTime(DateTime $dateTime): string
+    {
+        return $dateTime->format(self::FORMAT_OUT_TIME) . self::FORMAT_OUT_TIME_SUFFIX;
+    }
+
+    private function hasTimeSet(DateTime $dateTime): bool
+    {
+        return $dateTime->format(self::FORMAT_IN_TIME) != '00:00';
+    }
+
+    private function areSameDate(?DateTime $dateTime1, ?DateTime $dateTime2): bool
+    {
+        if ($dateTime1 === null || $dateTime2 === null) {
+            return false;
+        }
+
+        return $dateTime1->format(self::FORMAT_IN_DATE) == $dateTime2->format(self::FORMAT_IN_DATE);
+    }
+
+    private function areSameTime(?DateTime $dateTime1, ?DateTime $dateTime2): bool
+    {
+        if ($dateTime1 === null || $dateTime2 === null) {
+            return false;
+        }
+
+        return $dateTime1->format(self::FORMAT_IN_TIME) == $dateTime2->format(self::FORMAT_IN_TIME);
     }
 }

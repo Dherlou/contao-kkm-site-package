@@ -26,7 +26,7 @@
         {% block event_full_time %}
             <p class="info">
                 <time datetime="{{ datetime }}">
-                    {{ date|kkm_datetime(time, weekday, false) }}
+                    {{ date|kkm_datetime(time, false) }}
                 </time>
             </p>
         {% endblock %}
