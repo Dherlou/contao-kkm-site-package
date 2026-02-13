@@ -42,7 +42,8 @@
 
                 {% block event_teaser_tags %}
                     <div class="tags">
-                        {% set tagsToDisplay = tags|kkm_tags_list %}
+                        {% set tagsUnserialized = tags is iterable ? tags : kkm_tags_load_serialized(tags) %}
+                        {% set tagsToDisplay = tagsUnserialized|kkm_tags_list %}
 
                         {% for tag in tagsToDisplay %}
                             <a href="{{
