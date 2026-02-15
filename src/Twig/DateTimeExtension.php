@@ -38,7 +38,7 @@ class DateTimeExtension extends AbstractExtension
 
     // filter implementations
 
-    public function parseAndFormatDateTimeStrings(string $dateString, ?string $timeString = null, bool $lineBreak = true): string
+    public function parseAndFormatDateTimeStrings(?string $dateString = null, ?string $timeString = null, bool $lineBreak = true): string
     {
         list($start, $end) = $this->parseDateTimeStrings($dateString, $timeString);
         
@@ -49,7 +49,12 @@ class DateTimeExtension extends AbstractExtension
     {
         $pattern = '/(?<=<time datetime="[^"]{25}">)(.*)(?=<\/time>)/';
 
-        preg_match($pattern, $recurring, $matches);
+        $match = preg_match($pattern, $recurring, $matches);
+
+        if (!$match) {
+            return $recurring;
+        }
+
         $formattedDateTime = $this->parseAndFormatDateTimeStrings($matches[1]);
 
         return preg_replace(
@@ -68,7 +73,7 @@ class DateTimeExtension extends AbstractExtension
 
     // filter helpers
 
-    private function parseDateTimeStrings(string $dateString, ?string $timeString): array
+    private function parseDateTimeStrings(?string $dateString = null, ?string $timeString = null): array
     {
         list($dateStrings, $timeStrings) = $this->extractDateTimeStrings($dateString, $timeString);
         $dateTimes = [];
@@ -92,9 +97,9 @@ class DateTimeExtension extends AbstractExtension
         return $dateTimes;
     }
 
-    private function extractDateTimeStrings(string $dateString, ?string $timeString): array
+    private function extractDateTimeStrings(?string $dateString = null, ?string $timeString = null): array
     {
-        $dateTimeStrings = explode(self::SEPARATOR_RANGE_SHORT, $dateString);
+        $dateTimeStrings = explode(self::SEPARATOR_RANGE_SHORT, $dateString ?? '');
 
         $dateStrings = [];
         $timeStrings = [];
